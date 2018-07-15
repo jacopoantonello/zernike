@@ -67,13 +67,20 @@ def lookup_version():
 setup(
     name='zernike',
     version=lookup_version(),
-    description='',
+    description='Python code for Zernike polynomials',
     long_description=long_description,
-    url='',
-    author='',
-    author_email='',
-    license='',
-    classifiers=[],
+    url='https://github.com/jacopoantonello/zernike',
+    author='Jacopo Antonello',
+    author_email='jack@antonello.org',
+    license='GPLv3+',
+    classifiers=[
+        'Development Status :: 5 - Production/Stable',
+        'Intended Audience :: Developers',
+        'Topic :: Scientific/Engineering :: Physics', (
+            'License :: OSI Approved :: GNU General Public License v3 ' +
+            'or later (GPLv3+)'),
+        'Programming Language :: Python :: 3',
+    ],
     setup_requires=['numpy'],
     install_requires=['numpy'],
     packages=['zernike'],
