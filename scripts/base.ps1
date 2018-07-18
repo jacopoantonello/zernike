@@ -36,8 +36,6 @@ Function Run-Python {
 	process {
 		$path1 = "Registry::HKEY_CURRENT_USER\Software\Python\ContinuumAnalytics\Anaconda36-64\InstallPath"
 		$value1 = "ExecutablePath"
-		# $path2 = "Registry::HKEY_LOCAL_MACHINE\Software\Python\ContinuumAnalytics\Anaconda36-64\InstallPath"
-		# $value2 = "ExecutablePath"
 		
 		if (Test-RegistryValue -Path $path1 -Name $value1) {
 				$p = (Test-RegistryValue -PassThru -Path $path1 -Name $value1).$value1
@@ -45,21 +43,20 @@ Function Run-Python {
 		} else {
 				Write-Host -ForegroundColor Red "Cannot find Python. Is Anaconda for Python 3 installed?"
 		}
-    }
+	}
 }
 Function Activate-Anaconda {
 	process {
 		$path1 = "Registry::HKEY_CURRENT_USER\Software\Python\ContinuumAnalytics\Anaconda36-64\InstallPath"
 		$value1 = "ExecutablePath"
-		# $path2 = "Registry::HKEY_LOCAL_MACHINE\Software\Python\ContinuumAnalytics\Anaconda36-64\InstallPath"
-		# $value2 = "ExecutablePath"
 		
 		if (Test-RegistryValue -Path $path1 -Name $value1) {
 				$p = (Test-RegistryValue -PassThru -Path $path1 -Name $value1).$value1
-                $p = (Split-Path -Parent -Path $p)
-                $env:Path += "$p;$p\Scripts"
+				$p = (Split-Path -Parent -Path $p)
+				$env:Path = "$p;$p\Scripts;" + $env:Path
+				activate.bat $p
 		} else {
 				Write-Host -ForegroundColor Red "Cannot find Python. Is Anaconda for Python 3 installed?"
 		}
-    }
+	}
 }
