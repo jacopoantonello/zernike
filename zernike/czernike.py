@@ -65,6 +65,7 @@ class Zern:
     # Noll/Mahajan's normalisation, unit variance over the unit disk
     NORM_NOLL = 1
 
+    shape = None
     numpy_dtype = 'undefined'
 
     # FIXME
@@ -266,6 +267,18 @@ class Zern:
         m = self.mtab[k - 1]
         return n, m
 
+    def vect(self, Phi):
+        r"Reshape `Phi` into a vector"
+        return Phi.ravel(order='F')
+
+    def matrix(self, Phi):
+        r"Reshape `Phi` into a matrix"
+        if self.shape is None:
+            raise ValueError('Use make_cart_grid() to define the shape first')
+        elif self.shape[0]*self.shape[1] != Phi.size:
+            raise ValueError(f'Phi.shape should be {self.shape}')
+        return Phi.reshape(self.shape, order='F')
+
     def make_cart_grid(self, xx, yy, unit_circle=True):
         r"""Make a cartesian grid to evaluate the Zernike polynomials.
 
@@ -295,15 +308,16 @@ class Zern:
         """
         self.ZZ = np.zeros(
             (xx.size, self.nk), order='F', dtype=self.numpy_dtype)
+        self.shape = xx.shape
         rho = np.sqrt(np.square(xx) + np.square(yy))
         theta = np.arctan2(yy, xx)
         for k in range(self.nk):
             prod = self.radial(k, rho)*self.angular(k, theta)
             if unit_circle:
                 prod[rho > 1.0] = np.nan
-            self.ZZ[:, k] = prod.ravel(order='F')
+            self.ZZ[:, k] = self.vect(prod)
 
-    def eval_grid(self, a):
+    def eval_grid(self, a, matrix=False):
         """Evaluate the Zernike polynomials using the coefficients in `a`.
 
         Parameters
@@ -312,8 +326,9 @@ class Zern:
 
         Returns
         -------
-        -   `Phi`: a `numpy` vector in column major order. Use `np.reshape(Phi,
-            (K, L), order='F'))` to obtain a matrix.
+        -   `Phi`: a `numpy` vector in column major order. Use the `vect()` or
+            `matrix()` methods to flatten or unflatten the matrix.
+        -   `matrix`: return a matrix instead of a vector
 
         Examples
         --------
@@ -337,15 +352,20 @@ class Zern:
                 p.subplot(3, 3, i)
                 c *= 0.0
                 c[i] = 1.0
-                Phi = cart.eval_grid(c).reshape((L, K), order='F')
+                Phi = cart.eval_grid(c, matrix=True)
                 p.imshow(Phi, origin='lower')
                 p.axis('off')
 
             p.show()
 
         """
-        assert(a.size == self.ZZ.shape[1])
-        return np.dot(self.ZZ, a)
+        if a.size != self.nk:
+            raise ValueError(f'a.size = {a.size} but self.nk = {self.nk}')
+        Phi = np.dot(self.ZZ, a)
+        if matrix:
+            return self.matrix(Phi)
+        else:
+            return Phi
 
     def fit_cart_grid(self, Phi, rcond=None):
         """Fit a cartesian grid using least-squares.
@@ -379,7 +399,7 @@ class Zern:
             cart.make_cart_grid(xv, yv)
 
             c0 = np.random.normal(size=cart.nk)
-            Phi = cart.eval_grid(c0).reshape((L, K), order='F')
+            Phi = cart.eval_grid(c0, matrix=True)
             c1 = cart.fit_cart_grid(Phi)[0]
             p.figure(1)
             p.subplot(1, 2, 1)
@@ -394,7 +414,7 @@ class Zern:
         """
         zfm = np.isfinite(self.ZZ[:, 0])
         zfA = self.ZZ[zfm, :]
-        Phi1 = (Phi.ravel(order='F'))[zfm]
+        Phi1 = self.vect(Phi)[zfm]
 
         a, res, rnk, sv = lstsq(
             np.dot(zfA.T, zfA), np.dot(zfA.T, Phi1), rcond=rcond)
@@ -423,6 +443,7 @@ class Zern:
         """
         L, K = theta_i.size, rho_j.size
         self.ZZ = np.zeros((K*L, self.nk), order='F', dtype=self.numpy_dtype)
+        self.shape = (L, K)
         for k in range(self.nk):
             rad = self.radial(k, rho_j).reshape((1, K), order='F')
             ang = self.angular(k, theta_i).reshape((L, 1), order='F')
@@ -473,6 +494,8 @@ class Zern:
         try:
             params['data'] = self.ZZ
             f.create_dataset(prefix + 'ZZ', **params)
+            f.create_dataset(
+                prefix + 'shape', data=self.shape)
         except AttributeError:
             pass
 
@@ -506,6 +529,7 @@ class Zern:
         z.numpy_dtype = f[prefix + 'numpy_dtype'].value
         try:
             z.ZZ = f[prefix + 'ZZ'].value
+            z.shape = f[prefix + 'shape'].value
         except ValueError:
             pass
 
