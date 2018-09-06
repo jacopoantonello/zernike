@@ -530,7 +530,7 @@ class Zern:
         try:
             z.ZZ = f[prefix + 'ZZ'].value
             z.shape = f[prefix + 'shape'].value
-        except ValueError:
+        except KeyError:
             pass
 
         return z
