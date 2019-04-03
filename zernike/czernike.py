@@ -26,7 +26,7 @@
 import numpy as np
 import h5py
 
-from numpy.linalg import lstsq
+from numpy.linalg import lstsq, matrix_rank, norm
 from math import factorial
 
 
@@ -498,6 +498,72 @@ class Zern:
                 prefix + 'shape', data=self.shape)
         except AttributeError:
             pass
+
+    def make_rotation(self, alpha):
+        r"""Make an orthogonal matrix to rotate the pupil.
+
+        Parameters
+        ----------
+        - `alpha`: `float` rotation angle in degrees
+
+        """
+        alpha *= np.pi/180
+        nml = list(zip(self.ntab.tolist(), self.mtab.tolist()))
+        R = np.zeros((self.nk, self.nk))
+        for i, nm in enumerate(nml):
+            n, m = nm[0], nm[1]
+            if m == 0:
+                R[i, i] = 1.0
+            elif m > 0:
+                R[i, i] = np.cos(m*alpha)
+                R[i, nml.index((n, -m))] = np.sin(m*alpha)
+            else:
+                R[i, nml.index((n, -m))] = -np.sin(abs(m)*alpha)
+                R[i, i] = np.cos(abs(m)*alpha)
+
+        # checks
+        assert(matrix_rank(R) == R.shape[0])
+        assert(norm((np.dot(R, R.T) - np.eye(self.nk)).ravel()) < 1e-11)
+        assert(norm((np.dot(R.T, R) - np.eye(self.nk)).ravel()) < 1e-11)
+
+        return R
+
+    def make_yflip(self):
+        r"Make an orthogonal matrix to flip the pupil along y."
+        nml = list(zip(self.ntab.tolist(), self.mtab.tolist()))
+        R = np.zeros((self.nk, self.nk))
+        for i, nm in enumerate(nml):
+            m = nm[1]
+            if m < 0:
+                R[i, i] = -1.0
+            else:
+                R[i, i] = 1.0
+
+        # checks
+        assert(matrix_rank(R) == R.shape[0])
+        assert(norm((np.dot(R, R.T) - np.eye(self.nk)).ravel()) < 1e-11)
+        assert(norm((np.dot(R.T, R) - np.eye(self.nk)).ravel()) < 1e-11)
+
+        return R
+
+    def make_xflip(self):
+        r"Make an orthogonal matrix to flip the pupil along x."
+        nml = list(zip(self.ntab.tolist(), self.mtab.tolist()))
+        R = np.zeros((self.nk, self.nk))
+        for i, nm in enumerate(nml):
+            m = nm[1]
+            if abs(m) % 2 == 0 and m < 0:
+                R[i, i] = -1.0
+            elif abs(m) % 2 == 1 and m > 0:
+                R[i, i] = -1.0
+            else:
+                R[i, i] = 1.0
+        # checks
+        assert(matrix_rank(R) == R.shape[0])
+        assert(norm((np.dot(R, R.T) - np.eye(self.nk)).ravel()) < 1e-11)
+        assert(norm((np.dot(R.T, R) - np.eye(self.nk)).ravel()) < 1e-11)
+
+        return R
 
     @classmethod
     def load(cls, filename, prepend=None):
