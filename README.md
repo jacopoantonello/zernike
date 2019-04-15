@@ -1,18 +1,18 @@
-Zernike
-=======
+# Zernike
 
 Python code for Zernike polynomials. The `czernike.py` module is originally from [enzpy](https://github.com/jacopoantonello/enzpy) but will be further developed here instead.
 
 
-Develop
--------
+# Develop
 
-    $ python setup.py develop --user
+```bash
+python setup.py develop --user
+```
 
 
+# Install on Windows
 
-Install on Windows
-------------------
-
-    $ python setup.py bdist_wheel
-    $ pip install dist\zernike-*.whl
+```bash
+python setup.py bdist_wheel
+pip install dist\zernike-*.whl
+```
