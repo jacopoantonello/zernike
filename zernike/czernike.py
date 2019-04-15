@@ -584,18 +584,18 @@ class Zern:
         if prepend is not None:
             prefix = prepend + prefix
 
-        z.coefnorm = f[prefix + 'coefnorm'].value
-        z.ntab = f[prefix + 'ntab'].value
-        z.mtab = f[prefix + 'mtab'].value
-        z.n = int(f[prefix + 'n'].value[0])
-        z.nk = int(f[prefix + 'nk'].value[0])
-        z.normalise = int(f[prefix + 'normalise'].value[0])
-        z.rhoitab = f[prefix + 'rhoitab'].value
-        z.rhotab = f[prefix + 'rhotab'].value
-        z.numpy_dtype = f[prefix + 'numpy_dtype'].value
+        z.coefnorm = f[prefix + 'coefnorm'][()]
+        z.ntab = f[prefix + 'ntab'][()]
+        z.mtab = f[prefix + 'mtab'][()]
+        z.n = int(f[prefix + 'n'][0])
+        z.nk = int(f[prefix + 'nk'][0])
+        z.normalise = int(f[prefix + 'normalise'][0])
+        z.rhoitab = f[prefix + 'rhoitab'][()]
+        z.rhotab = f[prefix + 'rhotab'][()]
+        z.numpy_dtype = f[prefix + 'numpy_dtype'][()]
         try:
-            z.ZZ = f[prefix + 'ZZ'].value
-            z.shape = f[prefix + 'shape'].value
+            z.ZZ = f[prefix + 'ZZ'][()]
+            z.shape = f[prefix + 'shape'][()]
         except KeyError:
             pass
 
@@ -1045,17 +1045,17 @@ class FitZern:
         if prepend is not None:
             prefix = prepend + prefix
 
-        myfit.A = f[prefix + 'A'].value
-        myfit.I_cosm = f[prefix + 'I_cosm'].value
-        myfit.I_sinm = f[prefix + 'I_sinm'].value
-        myfit.I_Rnmrho = f[prefix + 'I_Rnmrho'].value
-        myfit.K = int(f[prefix + 'K'].value[0])
-        myfit.L = int(f[prefix + 'L'].value[0])
-        myfit.rho_a = f[prefix + 'rho_a'].value
-        myfit.rho_b = f[prefix + 'rho_b'].value
-        myfit.rho_j = f[prefix + 'rho_j'].value
-        myfit.theta_a = f[prefix + 'theta_a'].value
-        myfit.theta_b = f[prefix + 'theta_b'].value
-        myfit.theta_i = f[prefix + 'theta_i'].value
+        myfit.A = f[prefix + 'A'][()]
+        myfit.I_cosm = f[prefix + 'I_cosm'][()]
+        myfit.I_sinm = f[prefix + 'I_sinm'][()]
+        myfit.I_Rnmrho = f[prefix + 'I_Rnmrho'][()]
+        myfit.K = int(f[prefix + 'K'][0])
+        myfit.L = int(f[prefix + 'L'][0])
+        myfit.rho_a = f[prefix + 'rho_a'][()]
+        myfit.rho_b = f[prefix + 'rho_b'][()]
+        myfit.rho_j = f[prefix + 'rho_j'][()]
+        myfit.theta_a = f[prefix + 'theta_a'][()]
+        myfit.theta_b = f[prefix + 'theta_b'][()]
+        myfit.theta_i = f[prefix + 'theta_i'][()]
 
         return myfit
