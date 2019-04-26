@@ -6,7 +6,7 @@
 """
 
 # zernike - Zernike polynomials implementation for Python
-# Copyright 2016-2018 J. Antonello <jacopo@antonello.org>
+# Copyright 2016-2019 J. Antonello <jacopo@antonello.org>
 #
 # This file is part of zernike.
 #
@@ -65,9 +65,6 @@ class Zern:
     # Noll/Mahajan's normalisation, unit variance over the unit disk
     NORM_NOLL = 1
 
-    shape = None
-    numpy_dtype = 'undefined'
-
     # FIXME
     def _print_rhotab(self):
         for i in range(self.nk):
@@ -98,6 +95,9 @@ class Zern:
         `NORM_NOLL` is implemented.
 
         """
+        self.shape = None
+        self.numpy_dtype = 'undefined'
+
         nk = (n + 1)*(n + 2)//2
         self.n = n
         self.nk = nk
@@ -632,7 +632,9 @@ class CZern(Zern):
 
     """
 
-    numpy_dtype = 'complex'
+    def __init__(self, n, normalise=Zern.NORM_NOLL):
+        super().__init__(n, normalise)
+        self.numpy_dtype = 'complex'
 
     def ck(self, n, m):
         return np.sqrt(n + 1.0)
@@ -683,7 +685,9 @@ class RZern(Zern):
 
     """
 
-    numpy_dtype = 'float'
+    def __init__(self, n, normalise=Zern.NORM_NOLL):
+        super().__init__(n, normalise)
+        self.numpy_dtype = 'float'
 
     def ck(self, n, m):
         if self.normalise == self.NORM_NOLL:
