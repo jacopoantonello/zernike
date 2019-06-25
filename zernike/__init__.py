@@ -4,7 +4,7 @@
 from zernike import version
 
 __author__ = 'J Antonello'
-__copyright__ = 'Copyright 2018, J. Antonello'
+__copyright__ = 'Copyright 2016-2019, J. Antonello'
 __license__ = 'GPLv3+'
 __email__ = 'jacopo@antonello.org'
 __status__ = 'Production'
