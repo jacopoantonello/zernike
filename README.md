@@ -11,5 +11,6 @@ python setup.py develop --user
 First install the external requirements:
 * [Anaconda](https://www.anaconda.com/distribution/) for Python 3
 * [Git](https://git-scm.com/download/win)
+	- NB: Make sure you choose "Git from the command line and also 3rd-party software" in "Adjusting your PATH environment"
 
-Then double-click on `install.bat`.
+Then clone this repository and double-click on `install.bat`.
