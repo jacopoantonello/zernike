@@ -565,6 +565,10 @@ class Zern:
 
         return R
 
+    def make_permutation(self, noll):
+        P = np.eye(self.nk)
+        return P[:, np.asarray(noll) - 1]
+
     @classmethod
     def load(cls, filename, prepend=None):
         """Load object from an HDF5 file."""
