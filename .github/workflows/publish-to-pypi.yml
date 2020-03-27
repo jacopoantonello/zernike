@@ -21,6 +21,7 @@ jobs:
         TWINE_USERNAME: __token__
         TWINE_PASSWORD: ${{ secrets.pypi_password }}
       run: |
+        git fetch origin
         git fetch --tags origin
         python setup.py sdist bdist_wheel
         twine upload dist/*
