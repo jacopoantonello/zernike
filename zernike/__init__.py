@@ -360,7 +360,7 @@ class Zern:
         .. code:: python
 
             import numpy as np
-            import matplotlib.pyplot as p
+            import matplotlib.pyplot as plt
             from zernike import RZern
 
             cart = RZern(6)
@@ -371,16 +371,16 @@ class Zern:
             cart.make_cart_grid(xv, yv)
 
             c = np.zeros(cart.nk)
-            p.figure(1)
+            plt.figure(1)
             for i in range(1, 10):
-                p.subplot(3, 3, i)
+                plt.subplot(3, 3, i)
                 c *= 0.0
                 c[i] = 1.0
                 Phi = cart.eval_grid(c, matrix=True)
-                p.imshow(Phi, origin='lower')
-                p.axis('off')
+                plt.imshow(Phi, origin='lower', extent=(-1, 1, -1, 1))
+                plt.axis('off')
 
-            p.show()
+            plt.show()
 
         """
         if a.size != self.nk:
@@ -412,7 +412,7 @@ class Zern:
         .. code:: python
 
             import numpy as np
-            import matplotlib.pyplot as p
+            import matplotlib.pyplot as plt
             from zernike import RZern
 
             cart = RZern(6)
@@ -425,15 +425,15 @@ class Zern:
             c0 = np.random.normal(size=cart.nk)
             Phi = cart.eval_grid(c0, matrix=True)
             c1 = cart.fit_cart_grid(Phi)[0]
-            p.figure(1)
-            p.subplot(1, 2, 1)
-            p.imshow(Phi, origin='lower')
-            p.axis('off')
-            p.subplot(1, 2, 2)
-            p.plot(range(1, cart.nk + 1), c0, marker='.')
-            p.plot(range(1, cart.nk + 1), c1, marker='.')
+            plt.figure(1)
+            plt.subplot(1, 2, 1)
+            plt.imshow(Phi, origin='lower', extent=(-1, 1, -1, 1))
+            plt.axis('off')
+            plt.subplot(1, 2, 2)
+            plt.plot(range(1, cart.nk + 1), c0, marker='.')
+            plt.plot(range(1, cart.nk + 1), c1, marker='.')
 
-            p.show()
+            plt.show()
 
         """
         zfm = np.isfinite(self.ZZ[:, 0])
