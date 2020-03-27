@@ -27,3 +27,10 @@ python setup.py develop --user
   GitHub's *Download ZIP* button above, as the installation script will not
   work in that case.
 - Finally, double-click on `install.bat`.
+
+### Run tests
+
+```bash
+cd tests
+nosetests -v -x --pdb *.py
+```
