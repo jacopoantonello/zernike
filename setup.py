@@ -58,7 +58,7 @@ setup(
     long_description=long_description,
     url='https://github.com/jacopoantonello/zernike',
     author='Jacopo Antonello',
-    author_email='jack@antonello.org',
+    author_email='jacopo@antonello.org',
     license='GPLv3+',
     classifiers=[
         'Development Status :: 5 - Production/Stable',
