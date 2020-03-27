@@ -24,6 +24,8 @@
 # along with zernike.  If not, see <http://www.gnu.org/licenses/>.
 
 
+from abc import ABC, abstractmethod
+
 import numpy as np
 import h5py
 
@@ -63,7 +65,7 @@ HDF5_options = {
     'compression_opts': 9}
 
 
-class Zern:
+class Zern(ABC):
     """Shared code for `RZern` and `CZern`.
 
     This is an abstract class, use `RZern` and `CZern` instead. Only
@@ -170,6 +172,7 @@ class Zern:
             for ni in range(n + 1):
                 self.rhoitab[ci, ni] = self.rhotab[ci, ni]/(n + 2 - ni)
 
+    @abstractmethod
     def ck(self, n, m):
         r"""Normalisation coefficient for the `k`-th Zernike polynomial.
 
@@ -186,7 +189,7 @@ class Zern:
         For complex-valued Zernike polynomials, :math:`c_n^m = \sqrt{n + 1}`.
 
         """
-        return 0
+        pass
 
     def Rnm(self, k, rho):
         r"""Compute the `k`-th radial polynomial :math:`R_n^m(\rho)`.
@@ -213,6 +216,7 @@ class Zern:
             [(rho**(self.n + 2 - i))*self.rhoitab[k, i]
                 for i in range(self.n + 3)])
 
+    @abstractmethod
     def angular(self, k, theta):
         r"""Compute the angular function for the `k`-th Zernike polynomial.
 
@@ -236,7 +240,7 @@ class Zern:
             (2015). `url <http://dx.doi.org/10.1364/JOSAA.32.001160>`__.
 
         """
-        return 0.0
+        pass
 
     def radial(self, k, rho):
         r"""Compute the radial function for the `k`-th Zernike polynomial.
