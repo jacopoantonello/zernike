@@ -6,7 +6,7 @@ import sys
 import re
 
 from subprocess import check_output
-from setuptools import setup
+from setuptools import setup, find_packages
 from os import path
 
 
@@ -69,6 +69,7 @@ setup(
         'Programming Language :: Python :: 3',
     ],
     setup_requires=['numpy'],
-    install_requires=['numpy'],
-    packages=['zernike'],
+    install_requires=['numpy', 'h5py', 'matplotlib'],
+    packages=find_packages(exclude=['tests*', 'examples*']),
+    python_requires='>=3.7',
 )
