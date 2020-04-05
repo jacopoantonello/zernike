@@ -1,8 +1,9 @@
 name: Publish packages to PyPI
 
 on:
-  release:
-    types: [created]
+  push:
+    branches:
+      - master
 
 jobs:
   publish:
