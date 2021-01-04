@@ -517,7 +517,10 @@ class Zern(ABC):
         f.create_dataset(prefix + 'rhotab', **params)
 
         f.create_dataset(
-            prefix + 'numpy_dtype', data=self.numpy_dtype)
+            prefix + 'numpy_dtype',
+            data=np.array(
+                self.numpy_dtype.encode('utf-8'),
+                dtype=h5py.string_dtype('utf-8', len(self.numpy_dtype))))
 
         try:
             params['data'] = self.ZZ
@@ -624,7 +627,7 @@ class Zern(ABC):
         z.normalise = int(f[prefix + 'normalise'][0])
         z.rhoitab = f[prefix + 'rhoitab'][()]
         z.rhotab = f[prefix + 'rhotab'][()]
-        z.numpy_dtype = f[prefix + 'numpy_dtype'][()]
+        z.numpy_dtype = f[prefix + 'numpy_dtype'][()].decode('utf-8')
         try:
             z.ZZ = f[prefix + 'ZZ'][()]
             z.shape = f[prefix + 'shape'][()]
