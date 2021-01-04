@@ -43,7 +43,7 @@ for i in range(1, 10):
 plt.show()
 ```
 
-## Example: fit Zernike polynomials Cartesian coordinates
+## Example: fit Zernike polynomials in Cartesian coordinates
 
 ```python
 import numpy as np

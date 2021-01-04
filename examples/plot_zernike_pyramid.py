@@ -3,7 +3,6 @@
 
 import matplotlib.pyplot as plt
 import numpy as np
-
 from zernike import RZern
 
 if __name__ == '__main__':
