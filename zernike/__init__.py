@@ -621,7 +621,9 @@ class Zern(ABC):
         z.normalise = int(f[prefix + 'normalise'][0])
         z.rhoitab = f[prefix + 'rhoitab'][()]
         z.rhotab = f[prefix + 'rhotab'][()]
-        z.numpy_dtype = f[prefix + 'numpy_dtype'][()].decode('utf-8')
+        z.numpy_dtype = f[prefix + 'numpy_dtype'][()]
+        if isinstance(z.numpy_dtype, bytes):
+            z.numpy_dtype = z.numpy_dtype.decode('utf-8')
         try:
             z.ZZ = f[prefix + 'ZZ'][()]
             z.shape = f[prefix + 'shape'][()]
