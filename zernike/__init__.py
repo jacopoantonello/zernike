@@ -22,7 +22,12 @@
 # You should have received a copy of the GNU General Public License
 # along with zernike.  If not, see <http://www.gnu.org/licenses/>.
 
-from abc import ABC, abstractmethod
+from __future__ import print_function, division # Python 2
+try:
+    from abc import ABC, abstractmethod
+except: # Probably Python 2
+    from abc import ABCMeta, abstractmethod
+    ABC = ABCMeta('ABC', (object,), {'__slots__': ()})
 from math import factorial
 
 import h5py
@@ -297,7 +302,7 @@ class Zern(ABC):
         if self.shape is None:
             raise ValueError('Use make_cart_grid() to define the shape first')
         elif self.shape[0] * self.shape[1] != Phi.size:
-            raise ValueError(f'Phi.shape should be {self.shape}')
+            raise ValueError('Phi.shape should be %d'%self.shape)
         return Phi.reshape(self.shape, order='F')
 
     def make_cart_grid(self, xx, yy, unit_circle=True):
@@ -382,7 +387,7 @@ class Zern(ABC):
 
         """
         if a.size != self.nk:
-            raise ValueError(f'a.size = {a.size} but self.nk = {self.nk}')
+            raise ValueError('a.size = %d but self.nk = %d'%(a.size,self.nk))
         Phi = np.dot(self.ZZ, a)
         if matrix:
             return self.matrix(Phi)
@@ -663,7 +668,7 @@ class CZern(Zern):
 
     """
     def __init__(self, n, normalise=Zern.NORM_NOLL):
-        super().__init__(n, normalise)
+        super(CZern, self).__init__(n, normalise)
         self.numpy_dtype = 'complex'
 
     def ck(self, n, m):
@@ -715,7 +720,7 @@ class RZern(Zern):
 
     """
     def __init__(self, n, normalise=Zern.NORM_NOLL):
-        super().__init__(n, normalise)
+        super(RZern, self).__init__(n, normalise)
         self.numpy_dtype = 'float'
 
     def ck(self, n, m):
