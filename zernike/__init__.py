@@ -302,7 +302,7 @@ class Zern(ABC):
         if self.shape is None:
             raise ValueError('Use make_cart_grid() to define the shape first')
         elif self.shape[0] * self.shape[1] != Phi.size:
-            raise ValueError('Phi.shape should be %d'%self.shape)
+            raise ValueError('Phi.shape should be %s'%self.shape)
         return Phi.reshape(self.shape, order='F')
 
     def make_cart_grid(self, xx, yy, unit_circle=True):
