@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+from __future__ import print_function
 import os
 import re
 import sys
 from os import path
+from io import open # Python 2
 from subprocess import check_output
 
 from setuptools import find_packages, setup
@@ -29,11 +31,11 @@ def update_version():
                            re.MULTILINE).group(1)
 
         with open(path.join('zernike', 'version.py'), 'w', newline='\n') as f:
-            f.write('#!/usr/bin/env python3\n')
+            f.write('#!/usr/bin/env python\n')
             f.write('# -*- coding: utf-8 -*-\n\n')
-            f.write(f"__version__ = '{version}'\n")
-            f.write(f"__date__ = '{date}'\n")
-            f.write(f"__commit__ = '{commit}'")
+            f.write("__version__ = '%s'\n"%version)
+            f.write("__date__ = '%s'\n"%date)
+            f.write("__commit__ = '%s'"%commit)
     except Exception as e:
         print('Cannot update version {}'.format(str(e)), file=sys.stderr)
 
@@ -68,5 +70,5 @@ setup(
     setup_requires=['numpy'],
     install_requires=['numpy', 'h5py', 'matplotlib'],
     packages=find_packages(exclude=['tests*', 'examples*']),
-    python_requires='>=3.7',
+    python_requires='>=2.7',
 )
