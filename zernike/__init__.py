@@ -134,8 +134,8 @@ class Zern(ABC):
         rhotab = np.zeros((nk, n + 1), order='F')
         # coefficients of \int R_n^m(\rho) \rho \,d\rho
         rhoitab = np.zeros((nk, n + 3), order='F')
-        ntab = np.zeros(nk, dtype=np.int)
-        mtab = np.zeros(nk, dtype=np.int)
+        ntab = np.zeros(nk, dtype=int)
+        mtab = np.zeros(nk, dtype=int)
         coefnorm = np.zeros(nk)
 
         self.rhotab = rhotab
@@ -506,12 +506,12 @@ class Zern(ABC):
         params['data'] = self.mtab
         f.create_dataset(prefix + 'mtab', **params)
 
-        f.create_dataset(prefix + 'n', data=np.array([self.n], dtype=np.int))
+        f.create_dataset(prefix + 'n', data=np.array([self.n], dtype=int))
 
-        f.create_dataset(prefix + 'nk', data=np.array([self.nk], dtype=np.int))
+        f.create_dataset(prefix + 'nk', data=np.array([self.nk], dtype=int))
 
         f.create_dataset(prefix + 'normalise',
-                         data=np.array([self.normalise], dtype=np.int))
+                         data=np.array([self.normalise], dtype=int))
 
         params['data'] = self.rhoitab
         f.create_dataset(prefix + 'rhoitab', **params)
@@ -1024,9 +1024,9 @@ class FitZern:
         params['data'] = self.I_Rnmrho
         f.create_dataset(prefix + 'I_Rnmrho', **params)
 
-        f.create_dataset(prefix + 'K', data=np.array([self.K], dtype=np.int))
+        f.create_dataset(prefix + 'K', data=np.array([self.K], dtype=int))
 
-        f.create_dataset(prefix + 'L', data=np.array([self.L], dtype=np.int))
+        f.create_dataset(prefix + 'L', data=np.array([self.L], dtype=int))
 
         params['data'] = self.rho_a
         f.create_dataset(prefix + 'rho_a', **params)
