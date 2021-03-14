@@ -1,12 +1,13 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 from __future__ import print_function, unicode_literals
+
 import os
 import re
 import sys
+from io import open  # Python 2
 from os import path
-from io import open # Python 2
 from subprocess import check_output
 
 from setuptools import find_packages, setup
@@ -29,15 +30,18 @@ def update_version():
         date = re.search(r'^Date:\s+([^\s].*)$', last, re.MULTILINE).group(1)
         commit = re.search(r'^commit\s+([^\s]{40})', last,
                            re.MULTILINE).group(1)
-
-        with open(path.join('zernike', 'version.py'), 'w', newline='\n') as f:
-            f.write('#!/usr/bin/env python\n')
-            f.write('# -*- coding: utf-8 -*-\n\n')
-            f.write("__version__ = '%s'\n"%version)
-            f.write("__date__ = '%s'\n"%date)
-            f.write("__commit__ = '%s'"%commit)
     except Exception as e:
+        version = '0.0.0'
+        date = 'unknown'
+        commit = 'unknown'
         print('Cannot update version {}'.format(str(e)), file=sys.stderr)
+
+    with open(path.join('zernike', 'version.py'), 'w', newline='\n') as f:
+        f.write('#!/usr/bin/env python\n')
+        f.write('# -*- coding: utf-8 -*-\n\n')
+        f.write("__version__ = '{}'\n".format(version))
+        f.write("__date__ = '{}'\n".format(date))
+        f.write("__commit__ = '{}'".format(commit))
 
 
 update_version()
@@ -67,8 +71,8 @@ setup(
          'or later (GPLv3+)'),
         'Programming Language :: Python :: 3',
     ],
-    setup_requires=['numpy'],
-    install_requires=['numpy', 'h5py', 'matplotlib'],
+    setup_requires=['numpy', 'h5py'],
+    extras_requires={'plotting': ['matplotlib']},
     packages=find_packages(exclude=['tests*', 'examples*']),
     python_requires='>=2.7',
 )

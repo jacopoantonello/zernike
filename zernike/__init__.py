@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """Complex- and real-valued Zernike polynomials.
 
@@ -22,12 +22,13 @@
 # You should have received a copy of the GNU General Public License
 # along with zernike.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import print_function, division # Python 2
+from __future__ import division, print_function  # Python 2
+
 try:
     from abc import ABC, abstractmethod
-except: # Probably Python 2
+except ImportError:  # Probably Python 2
     from abc import ABCMeta, abstractmethod
-    ABC = ABCMeta('ABC', (object,), {'__slots__': ()})
+    ABC = ABCMeta('ABC', (object, ), {'__slots__': ()})
 from math import factorial
 
 import h5py
@@ -302,7 +303,7 @@ class Zern(ABC):
         if self.shape is None:
             raise ValueError('Use make_cart_grid() to define the shape first')
         elif self.shape[0] * self.shape[1] != Phi.size:
-            raise ValueError('Phi.shape should be %s'%self.shape)
+            raise ValueError('Phi.shape should be {}'.format(self.shape))
         return Phi.reshape(self.shape, order='F')
 
     def make_cart_grid(self, xx, yy, unit_circle=True):
@@ -387,7 +388,8 @@ class Zern(ABC):
 
         """
         if a.size != self.nk:
-            raise ValueError('a.size = %d but self.nk = %d'%(a.size,self.nk))
+            raise ValueError('a.size = {} but self.nk = {}'.format(
+                a.size, self.nk))
         Phi = np.dot(self.ZZ, a)
         if matrix:
             return self.matrix(Phi)
