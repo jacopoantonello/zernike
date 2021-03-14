@@ -4,9 +4,6 @@
 
 """
 
-# zernike - Zernike polynomials implementation for Python
-# Copyright 2016-2021 J. Antonello <jacopo@antonello.org>
-#
 # This file is part of zernike.
 #
 # zernike is free software: you can redistribute it and/or modify

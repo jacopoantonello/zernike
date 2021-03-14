@@ -112,6 +112,5 @@ np.linalg.norm(c_true - c_hat)/np.linalg.norm(c_true)
 ## Tests
 
 ```bash
-cd tests
-nosetests -v -x --pdb *.py
+python -m zernike.test
 ```
