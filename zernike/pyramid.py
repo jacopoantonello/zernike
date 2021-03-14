@@ -1,17 +1,45 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+# This file is part of zernike.
+#
+# zernike is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# zernike is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with zernike.  If not, see <http://www.gnu.org/licenses/>.
+
+import argparse
+
 import matplotlib.pyplot as plt
 import numpy as np
+
 from zernike import RZern
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(
+        description='Plot the pyramid of Zernike polynomials',
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument('--max-radial-order',
+                        default=6,
+                        type=int,
+                        metavar='NMAX')
+    args = parser.parse_args()
+
     plt.close('all')
 
     fs = 7
     fs1 = 6
 
-    cart = RZern(6)
+    nradial = args.max_radial_order
+    cart = RZern(nradial)
     L, K = 300, 300
     ddx = np.linspace(-1.0, 1.0, K)
     ddy = np.linspace(-1.0, 1.0, L)
@@ -22,7 +50,6 @@ if __name__ == '__main__':
 
     fig = plt.figure(1)
 
-    nradial = 6
     span = 0.05
     leftoff = .03
     while nradial >= 0:
