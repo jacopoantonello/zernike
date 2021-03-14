@@ -16,6 +16,12 @@ You can install `zernike` using `pip`
 pip install --user zernike
 ```
 
+## Example: plot the Zernike pyramid
+
+```python
+python -m zernike.pyramid
+```
+
 ## Example: plot the first 9 Zernike polynomials
 
 ```python
