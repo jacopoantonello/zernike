@@ -438,9 +438,10 @@ class Zern(ABC):
             plt.show()
 
         """
-        zfm = np.isfinite(self.ZZ[:, 0])
+        vPhi = self.vect(Phi)
+        zfm = np.logical_and(np.isfinite(self.ZZ[:, 0]), np.isfinite(vPhi))
         zfA = self.ZZ[zfm, :]
-        Phi1 = self.vect(Phi)[zfm]
+        Phi1 = vPhi[zfm]
 
         a, res, rnk, sv = lstsq(np.dot(zfA.T, zfA),
                                 np.dot(zfA.T, Phi1),
