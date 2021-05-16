@@ -144,25 +144,11 @@ class Zern(ABC):
         self.rhotab[0, n] = 1.0
         self.coefnorm[0] = 1.0
 
-        count = 1
         for ni in range(1, n + 1):
-            mi = ni % 2
-            while mi <= ni:
-                if mi == 0:
-                    self._make_rhotab_row(count, ni, mi)
-                    ntab[count], mtab[count] = ni, mi
-                    count += 1
-                else:
-                    self._make_rhotab_row(count + 0, ni, mi)
-                    self._make_rhotab_row(count + 1, ni, mi)
-                    if count % 2:
-                        ntab[count + 0], mtab[count + 0] = ni, mi
-                        ntab[count + 1], mtab[count + 1] = ni, -mi
-                    else:
-                        ntab[count + 0], mtab[count + 0] = ni, -mi
-                        ntab[count + 1], mtab[count + 1] = ni, mi
-                    count += 2
-                mi += 2
+            for mi in range(-ni, ni + 1, 2):
+                k = self.nm2noll(ni, mi) - 1
+                self._make_rhotab_row(k, ni, abs(mi))
+                ntab[k], mtab[k] = ni, mi
 
         # make rhoitab
         for ci in range(nk):
@@ -279,6 +265,19 @@ class Zern(ABC):
 
         """
         return sum([a[j] * self.Zk(j, rho, theta) for j in range(self.nk)])
+
+    @staticmethod
+    def nm2noll(n, m):
+        """Convert indices `(n, m)` to the Noll's index `k`.
+
+        Note that Noll's index `k` starts from one and Python indexing is
+        zero-based.
+
+        """
+        k = n * (n + 1) // 2 + abs(m)
+        if (m <= 0 and n % 4 in (0, 1)) or (m >= 0 and n % 4 in (2, 3)):
+            k += 1
+        return k
 
     def noll2nm(self, k):
         """Convert Noll's index `k` to the indices `(n, m)`.

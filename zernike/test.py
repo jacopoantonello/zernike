@@ -48,6 +48,13 @@ class TestZern(unittest.TestCase):
         expect = np.array([0, 1, -1, 0, -2, 2, -1, 1, -3, 3, 0, 2, -2, 4, -4])
         self.assertTrue(norm(self.pupil.mtab - expect) < self.max_enorm)
 
+    def test_nm2noll(self):
+        noll_indices = ((0, 0), (1, 1), (1, -1), (2, 0), (2, -2), (2, 2),
+                        (3, -1), (3, 1), (3, -3), (3, 3), (4, 0), (4, 2),
+                        (4, -2), (4, 4), (4, -4))
+        for k, (n, m) in enumerate(noll_indices):
+            self.assertEqual(RZern.nm2noll(n, m), k + 1)
+
     def test_rhotab(self):
         expect = [
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 13.416407864999, 12.649110640674,
