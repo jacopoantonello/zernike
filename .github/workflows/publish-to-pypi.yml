@@ -26,5 +26,5 @@ jobs:
       run: |
         git fetch --unshallow
         git fetch --tags origin
-        python setup.py sdist bdist_wheel
+        python setup.py sdist bdist_wheel --universal
         twine upload dist/*
