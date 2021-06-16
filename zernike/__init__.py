@@ -1,9 +1,13 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+
 """Complex- and real-valued Zernike polynomials.
 
 """
 
+# zernike - Zernike polynomials implementation for Python
+# Copyright 2016-2020 J. Antonello <jacopo@antonello.org>
+#
 # This file is part of zernike.
 #
 # zernike is free software: you can redistribute it and/or modify
@@ -19,23 +23,20 @@
 # You should have received a copy of the GNU General Public License
 # along with zernike.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import division, print_function  # Python 2
 
-try:
-    from abc import ABC, abstractmethod
-except ImportError:  # Probably Python 2
-    from abc import ABCMeta, abstractmethod
-    ABC = ABCMeta('ABC', (object, ), {'__slots__': ()})
-from math import factorial
+from abc import ABC, abstractmethod
 
-import h5py
 import numpy as np
+import h5py
+
 from numpy.linalg import lstsq, matrix_rank, norm
+from math import factorial
 
 from zernike import version
 
+
 __author__ = 'J Antonello'
-__copyright__ = 'Copyright 2016-2021, J. Antonello'
+__copyright__ = 'Copyright 2016-2020, J. Antonello'
 __license__ = 'GPLv3+'
 __email__ = 'jacopo@antonello.org'
 __status__ = 'Production'
@@ -52,16 +53,16 @@ commit:  {}
     __date__,
     __version__,
     __commit__,
-)
+    )
 __docformat__ = 'restructuredtext'
+
 
 HDF5_options = {
     'chunks': True,
     'shuffle': True,
     'fletcher32': True,
     'compression': 'gzip',
-    'compression_opts': 9
-}
+    'compression_opts': 9}
 
 
 class Zern(ABC):
@@ -105,11 +106,13 @@ class Zern(ABC):
     def _make_rhotab_row(self, c, n, m):
         # col major, row i, col j
         self.coefnorm[c] = self.ck(n, m)
-        for s in range((n - m) // 2 + 1):
-            self.rhotab[c, self.n - (n - 2 * s)] = (
-                ((-1)**s) * factorial(n - s) /
-                (factorial(s) * factorial((n + m) // 2 - s) *
-                 factorial((n - m) // 2 - s)))
+        for s in range((n - m)//2 + 1):
+            self.rhotab[c, self.n - (n - 2*s)] = (
+                ((-1)**s)*factorial(n - s) /
+                    (factorial(s)*factorial((n + m)//2 - s) *
+                    factorial((n - m)//2 - s)
+                )
+            )
 
     def __init__(self, n, normalise=NORM_NOLL):
         """Initialise Zernike polynomials up to radial order `n`.
@@ -121,18 +124,18 @@ class Zern(ABC):
         self.shape = None
         self.numpy_dtype = 'undefined'
 
-        nk = (n + 1) * (n + 2) // 2
+        nk = (n + 1)*(n + 2)//2
         self.n = n
         self.nk = nk
         self.normalise = normalise
-        assert (self.normalise == self.NORM_NOLL)
+        assert(self.normalise == self.NORM_NOLL)
 
         # coefficients of R_n^m(\rho), see [N1976]_
         rhotab = np.zeros((nk, n + 1), order='F')
         # coefficients of \int R_n^m(\rho) \rho \,d\rho
         rhoitab = np.zeros((nk, n + 3), order='F')
-        ntab = np.zeros(nk, dtype=int)
-        mtab = np.zeros(nk, dtype=int)
+        ntab = np.zeros(nk, dtype=np.int)
+        mtab = np.zeros(nk, dtype=np.int)
         coefnorm = np.zeros(nk)
 
         self.rhotab = rhotab
@@ -153,7 +156,7 @@ class Zern(ABC):
         # make rhoitab
         for ci in range(nk):
             for ni in range(n + 1):
-                self.rhoitab[ci, ni] = self.rhotab[ci, ni] / (n + 2 - ni)
+                self.rhoitab[ci, ni] = self.rhotab[ci, ni]/(n + 2 - ni)
 
     @abstractmethod
     def ck(self, n, m):
@@ -193,10 +196,24 @@ class Zern(ABC):
         """
         return np.polyval(self.rhotab[k, :], rho)
 
+    def Rnm_der(self, k, rho, order=1):
+
+        # rho polynomial
+        rho_poly = np.poly1d(self.rhotab[k,:])
+        assert np.allclose(rho_poly(rho), np.polyval(self.rhotab[k,:], rho)), "Fatal error in derivative"
+
+        # compute the derivative of given order
+        for i in range(order):
+            rho_poly = np.polyder(rho_poly)
+            #print("rho der", rho_poly)
+
+        return rho_poly(rho)
+
     def I_Rnmrho(self, k, rho):
         r"""Compute :math:`\int R_n^m(\rho)\rho`."""
-        return sum([(rho**(self.n + 2 - i)) * self.rhoitab[k, i]
-                    for i in range(self.n + 3)])
+        return sum(
+            [(rho**(self.n + 2 - i))*self.rhoitab[k, i]
+                for i in range(self.n + 3)])
 
     @abstractmethod
     def angular(self, k, theta):
@@ -237,7 +254,10 @@ class Zern(ABC):
             (2015). `url <http://dx.doi.org/10.1364/JOSAA.32.001160>`__.
 
         """
-        return self.coefnorm[k] * self.Rnm(k, rho)
+        return self.coefnorm[k]*self.Rnm(k, rho)
+
+    def radial_der(self, k, rho, order=1):
+        return self.coefnorm[k]*self.Rnm_der(k,rho,order=order)
 
     def Zk(self, k, rho, theta):
         r"""Compute the `k`-th Zernike polynomial.
@@ -254,7 +274,7 @@ class Zern(ABC):
             (2015). `url <http://dx.doi.org/10.1364/JOSAA.32.001160>`__.
 
         """
-        return self.radial(k, rho) * self.angular(k, theta)
+        return self.radial(k, rho)*self.angular(k, theta)
 
     def eval_a(self, a, rho, theta):
         r"""Compute the sum of `self.nk` Zernike polynomials at a point.
@@ -264,7 +284,7 @@ class Zern(ABC):
         where :math:`a_k` are the elements of `a`.
 
         """
-        return sum([a[j] * self.Zk(j, rho, theta) for j in range(self.nk)])
+        return sum([a[j]*self.Zk(j, rho, theta) for j in range(self.nk)])
 
     @staticmethod
     def nm2noll(n, m):
@@ -298,11 +318,11 @@ class Zern(ABC):
         r"Reshape `Phi` into a matrix"
         if self.shape is None:
             raise ValueError('Use make_cart_grid() to define the shape first')
-        elif self.shape[0] * self.shape[1] != Phi.size:
-            raise ValueError('Phi.shape should be {}'.format(self.shape))
+        elif self.shape[0]*self.shape[1] != Phi.size:
+            raise ValueError(f'Phi.shape should be {self.shape}')
         return Phi.reshape(self.shape, order='F')
 
-    def make_cart_grid(self, xx, yy, unit_circle=True):
+    def make_cart_grid(self, xx, yy, scale_by=1.0, unit_circle=True):
         r"""Make a cartesian grid to evaluate the Zernike polynomials.
 
         Parameters
@@ -329,17 +349,53 @@ class Zern(ABC):
         `ZZ` is stored with `order='F'`.
 
         """
-        self.ZZ = np.zeros((xx.size, self.nk),
-                           order='F',
-                           dtype=self.numpy_dtype)
+        self.scale_by = scale_by
+        self.ZZ = np.zeros(
+            (xx.size, self.nk), order='F', dtype=self.numpy_dtype)
+        self.ZZ_der1 = np.zeros(
+            (xx.size, self.nk), order='F', dtype=self.numpy_dtype)
+        self.ZZ_der2 = np.zeros(
+            (xx.size, self.nk), order='F', dtype=self.numpy_dtype)
+
+
+
         self.shape = xx.shape
         rho = np.sqrt(np.square(xx) + np.square(yy))
         theta = np.arctan2(yy, xx)
+        # rho = rho / max(rho)
+        self.rho_scaled = rho.copy()*scale_by
+
         for k in range(self.nk):
-            prod = self.radial(k, rho) * self.angular(k, theta)
+            prod = self.radial(k, rho)*self.angular(k, theta)
+            # derivatives
+            prod_der1 = self.radial_der(k, rho, order=1)*self.angular(k, theta)
+            prod_der2 = self.radial_der(k, rho, order=2)*self.angular(k, theta)
             if unit_circle:
                 prod[rho > 1.0] = np.nan
+                # derivatives
+                prod_der1[rho>1.0] = np.nan
+                prod_der2[rho>1.0] = np.nan
             self.ZZ[:, k] = self.vect(prod)
+            # derivatives
+            self.ZZ_der1[:, k] = self.vect(prod_der1)
+            self.ZZ_der2[:, k] = self.vect(prod_der2)
+
+    def make_cart_grid_nomesh(self, xx, yy, unit_circle=True):
+        # this is like make_cark_grid, but xx, yy may not be outputs from np.meshgrid
+        # we wish to use the points (x, y, z) as 3-d inputs, where xx, yy, zz contain 
+        # the corresponding x,y,z coordinates respectively.
+
+        self.ZZ = None
+        self.ZZ_nomesh = np.zeros(
+            (xx.size, self.nk), order='F', dtype=self.numpy_dtype)
+        self.shape_nomesh = xx.shape
+        rho = np.sqrt(np.square(xx) + np.square(yy))
+        theta = np.arctan2(yy, xx)
+        for k in range(self.nk):
+            prod = self.radial(k, rho)*self.angular(k, theta)
+            if unit_circle:
+                prod[rho > 1.0] = np.nan
+            self.ZZ_nomesh[:, k] = self.vect(prod)
 
     def eval_grid(self, a, matrix=False):
         """Evaluate the Zernike polynomials using the coefficients in `a`.
@@ -384,9 +440,36 @@ class Zern(ABC):
 
         """
         if a.size != self.nk:
-            raise ValueError('a.size = {} but self.nk = {}'.format(
-                a.size, self.nk))
+            raise ValueError(f'a.size = {a.size} but self.nk = {self.nk}')
         Phi = np.dot(self.ZZ, a)
+        if matrix:
+            return self.matrix(Phi)
+        else:
+            return Phi
+
+    def eval_curvature_grid(self, a, matrix=False):
+        if a.size != self.nk:
+            raise ValueError(f'a.size = {a.size} but self.nk = {self.nk}')
+
+        Phi_der1 = np.dot(self.ZZ_der1, a)
+        Phi_der2 = np.dot(self.ZZ_der2, a)
+
+        #print("zz_der 1", self.ZZ_der1.shape, "zz_der 2", self.ZZ_der2.shape)
+        #print(Phi_der1.shape, Phi_der2.shape)
+        #print("rho scaled shape", self.vect(self.rho_scaled).shape)
+
+        k1 = (Phi_der2/(self.scale_by**2)) / (1+(Phi_der1/self.scale_by)**2)**1.5
+        k2 = (Phi_der1/self.scale_by) / (1+(Phi_der1/self.scale_by)**2)**0.5 # also divide by rho
+        k2 = k2/self.vect(self.rho_scaled+1e-7)
+        if matrix:
+            return self.matrix(k1), self.matrix(k2)
+        else:
+            return k1, k2
+
+    def eval_grid_nomesh(self, a, matrix=False):
+        if a.size != self.nk:
+            raise ValueError(f'a.size = {a.size} but self.nk = {self.nk}')
+        Phi = np.dot(self.ZZ_nomesh, a)
         if matrix:
             return self.matrix(Phi)
         else:
@@ -437,14 +520,36 @@ class Zern(ABC):
             plt.show()
 
         """
-        vPhi = self.vect(Phi)
-        zfm = np.logical_and(np.isfinite(self.ZZ[:, 0]), np.isfinite(vPhi))
+        zfm = np.isfinite(self.ZZ[:, 0])
         zfA = self.ZZ[zfm, :]
-        Phi1 = vPhi[zfm]
+        Phi1 = self.vect(Phi)[zfm]
 
-        a, res, rnk, sv = lstsq(np.dot(zfA.T, zfA),
-                                np.dot(zfA.T, Phi1),
-                                rcond=rcond)
+        # remove np.nan values in Phi1
+        zfm = np.isfinite(Phi1)
+        zfA = zfA[zfm,:]
+        Phi1 = Phi1[zfm]
+
+        a, res, rnk, sv = lstsq(
+            np.dot(zfA.T, zfA), np.dot(zfA.T, Phi1), rcond=rcond)
+
+        return a, res, rnk, sv
+
+    def fit_cart_grid_nomesh(self, Phi, rcond=None):
+
+        zfm = np.isfinite(self.ZZ_nomesh[:, 0])
+        zfA = self.ZZ_nomesh[zfm, :]
+        Phi1 = self.vect(Phi)[zfm]
+
+        # remove np.nan values in Phi1
+        zfm = np.isfinite(Phi1)
+        zfA = zfA[zfm,:]
+        Phi1 = Phi1[zfm]
+
+        a, res, rnk, sv = lstsq(
+            zfA, Phi1, rcond=rcond)
+        # what is the diff ??
+        a, res, rnk, sv = lstsq(
+            np.dot(zfA.T, zfA), np.dot(zfA.T, Phi1), rcond=rcond)
 
         return a, res, rnk, sv
 
@@ -469,19 +574,17 @@ class Zern(ABC):
 
         """
         L, K = theta_i.size, rho_j.size
-        self.ZZ = np.zeros((K * L, self.nk), order='F', dtype=self.numpy_dtype)
+        self.ZZ = np.zeros((K*L, self.nk), order='F', dtype=self.numpy_dtype)
         self.shape = (L, K)
         for k in range(self.nk):
             rad = self.radial(k, rho_j).reshape((1, K), order='F')
             ang = self.angular(k, theta_i).reshape((L, 1), order='F')
-            prod = rad * ang
+            prod = rad*ang
             self.ZZ[:, k] = prod.ravel(order='F')
 
-    def save(self,
-             filename,
-             prepend=None,
-             params=HDF5_options,
-             libver='latest'):
+    def save(
+            self, filename, prepend=None,
+            params=HDF5_options, libver='latest'):
         """Save object into an HDF5 file."""
         f = h5py.File(filename, 'w', libver=libver)
         self.save_h5py(f, prepend=prepend, params=params)
@@ -503,12 +606,13 @@ class Zern(ABC):
         params['data'] = self.mtab
         f.create_dataset(prefix + 'mtab', **params)
 
-        f.create_dataset(prefix + 'n', data=np.array([self.n], dtype=int))
+        f.create_dataset(prefix + 'n', data=np.array([self.n], dtype=np.int))
 
-        f.create_dataset(prefix + 'nk', data=np.array([self.nk], dtype=int))
+        f.create_dataset(prefix + 'nk', data=np.array([self.nk], dtype=np.int))
 
-        f.create_dataset(prefix + 'normalise',
-                         data=np.array([self.normalise], dtype=int))
+        f.create_dataset(
+            prefix + 'normalise',
+            data=np.array([self.normalise], dtype=np.int))
 
         params['data'] = self.rhoitab
         f.create_dataset(prefix + 'rhoitab', **params)
@@ -516,15 +620,14 @@ class Zern(ABC):
         params['data'] = self.rhotab
         f.create_dataset(prefix + 'rhotab', **params)
 
-        f.create_dataset(prefix + 'numpy_dtype',
-                         data=np.array(self.numpy_dtype.encode('utf-8'),
-                                       dtype=h5py.string_dtype(
-                                           'utf-8', len(self.numpy_dtype))))
+        f.create_dataset(
+            prefix + 'numpy_dtype', data=self.numpy_dtype)
 
         try:
             params['data'] = self.ZZ
             f.create_dataset(prefix + 'ZZ', **params)
-            f.create_dataset(prefix + 'shape', data=self.shape)
+            f.create_dataset(
+                prefix + 'shape', data=self.shape)
         except AttributeError:
             pass
 
@@ -536,7 +639,7 @@ class Zern(ABC):
         - `alpha`: `float` rotation angle in degrees
 
         """
-        alpha *= np.pi / 180
+        alpha *= np.pi/180
         nml = list(zip(self.ntab.tolist(), self.mtab.tolist()))
         R = np.zeros((self.nk, self.nk))
         for i, nm in enumerate(nml):
@@ -544,16 +647,16 @@ class Zern(ABC):
             if m == 0:
                 R[i, i] = 1.0
             elif m > 0:
-                R[i, i] = np.cos(m * alpha)
-                R[i, nml.index((n, -m))] = np.sin(m * alpha)
+                R[i, i] = np.cos(m*alpha)
+                R[i, nml.index((n, -m))] = np.sin(m*alpha)
             else:
-                R[i, nml.index((n, -m))] = -np.sin(abs(m) * alpha)
-                R[i, i] = np.cos(abs(m) * alpha)
+                R[i, nml.index((n, -m))] = -np.sin(abs(m)*alpha)
+                R[i, i] = np.cos(abs(m)*alpha)
 
         # checks
-        assert (matrix_rank(R) == R.shape[0])
-        assert (norm((np.dot(R, R.T) - np.eye(self.nk)).ravel()) < 1e-11)
-        assert (norm((np.dot(R.T, R) - np.eye(self.nk)).ravel()) < 1e-11)
+        assert(matrix_rank(R) == R.shape[0])
+        assert(norm((np.dot(R, R.T) - np.eye(self.nk)).ravel()) < 1e-11)
+        assert(norm((np.dot(R.T, R) - np.eye(self.nk)).ravel()) < 1e-11)
 
         return R
 
@@ -569,9 +672,9 @@ class Zern(ABC):
                 R[i, i] = 1.0
 
         # checks
-        assert (matrix_rank(R) == R.shape[0])
-        assert (norm((np.dot(R, R.T) - np.eye(self.nk)).ravel()) < 1e-11)
-        assert (norm((np.dot(R.T, R) - np.eye(self.nk)).ravel()) < 1e-11)
+        assert(matrix_rank(R) == R.shape[0])
+        assert(norm((np.dot(R, R.T) - np.eye(self.nk)).ravel()) < 1e-11)
+        assert(norm((np.dot(R.T, R) - np.eye(self.nk)).ravel()) < 1e-11)
 
         return R
 
@@ -588,9 +691,9 @@ class Zern(ABC):
             else:
                 R[i, i] = 1.0
         # checks
-        assert (matrix_rank(R) == R.shape[0])
-        assert (norm((np.dot(R, R.T) - np.eye(self.nk)).ravel()) < 1e-11)
-        assert (norm((np.dot(R.T, R) - np.eye(self.nk)).ravel()) < 1e-11)
+        assert(matrix_rank(R) == R.shape[0])
+        assert(norm((np.dot(R, R.T) - np.eye(self.nk)).ravel()) < 1e-11)
+        assert(norm((np.dot(R.T, R) - np.eye(self.nk)).ravel()) < 1e-11)
 
         return R
 
@@ -626,8 +729,6 @@ class Zern(ABC):
         z.rhoitab = f[prefix + 'rhoitab'][()]
         z.rhotab = f[prefix + 'rhotab'][()]
         z.numpy_dtype = f[prefix + 'numpy_dtype'][()]
-        if isinstance(z.numpy_dtype, bytes):
-            z.numpy_dtype = z.numpy_dtype.decode('utf-8')
         try:
             z.ZZ = f[prefix + 'ZZ'][()]
             z.shape = f[prefix + 'shape'][()]
@@ -666,8 +767,9 @@ class CZern(Zern):
         (2015). `url <http://dx.doi.org/10.1364/JOSAA.32.001160>`__.
 
     """
+
     def __init__(self, n, normalise=Zern.NORM_NOLL):
-        super(CZern, self).__init__(n, normalise)
+        super().__init__(n, normalise)
         self.numpy_dtype = 'complex'
 
     def ck(self, n, m):
@@ -675,7 +777,7 @@ class CZern(Zern):
 
     def angular(self, j, theta):
         m = self.mtab[j]
-        return np.exp(1j * m * theta)
+        return np.exp(1j*m*theta)
 
 
 class RZern(Zern):
@@ -718,8 +820,9 @@ class RZern(Zern):
         (2015). `url <http://dx.doi.org/10.1364/JOSAA.32.001160>`__.
 
     """
+
     def __init__(self, n, normalise=Zern.NORM_NOLL):
-        super(RZern, self).__init__(n, normalise)
+        super().__init__(n, normalise)
         self.numpy_dtype = 'float'
 
     def ck(self, n, m):
@@ -727,16 +830,16 @@ class RZern(Zern):
             if m == 0:
                 return np.sqrt(n + 1.0)
             else:
-                return np.sqrt(2.0 * (n + 1.0))
+                return np.sqrt(2.0*(n + 1.0))
         else:
             return 1.0
 
     def angular(self, j, theta):
         m = self.mtab[j]
         if m >= 0:
-            return np.cos(m * theta)
-        else:
-            return np.sin(-m * theta)
+            return np.cos(m*theta)
+        else: 
+            return np.sin(-m*theta)
 
 
 class FitZern:
@@ -760,6 +863,7 @@ class FitZern:
         (2015). `url <http://dx.doi.org/10.1364/JOSAA.32.001160>`__.
 
     """
+
     def __init__(self, z, L, K):
         r"""Initialise a grid with `L` points for theta and `K` for rho.
 
@@ -774,85 +878,88 @@ class FitZern:
         self.L = L
         self.K = K
 
-        theta_i = np.array([2 * np.pi * i / L for i in range(L)])
-        theta_a = np.array([np.pi * (2 * i - 1) / L for i in range(L)])
-        theta_b = np.array([np.pi * (2 * i + 1) / L for i in range(L)])
+        theta_i = np.array([2*np.pi*i/L for i in range(L)])
+        theta_a = np.array([np.pi*(2*i - 1)/L for i in range(L)])
+        theta_b = np.array([np.pi*(2*i + 1)/L for i in range(L)])
         self.theta_i = theta_i
         self.theta_a = theta_a
         self.theta_b = theta_b
 
         rho_j = np.array(
-            [np.cos(np.pi * (K - (j + 0.5)) / (2 * K)) for j in range(K)])
+            [np.cos(np.pi*(K - (j + 0.5))/(2*K)) for j in range(K)])
         rho_a = np.array(
-            [np.cos(np.pi * (K - (j + 0.0)) / (2 * K)) for j in range(K)])
+            [np.cos(np.pi*(K - (j + 0.0))/(2*K)) for j in range(K)])
         rho_b = np.array(
-            [np.cos(np.pi * (K - (j + 1.0)) / (2 * K)) for j in range(K)])
+            [np.cos(np.pi*(K - (j + 1.0))/(2*K)) for j in range(K)])
         self.rho_j = rho_j
         self.rho_a = rho_a
         self.rho_b = rho_b
 
         # L x (m -1) = L x (n - 1), col major, excluding m = 0
-        I_cosm = np.array([
-            (1 / m) * (np.sin(m * theta_b[thi]) - np.sin(m * theta_a[thi]))
-            for m in range(1, z.n + 1) for thi in range(L)
-        ])
+        I_cosm = np.array(
+            [
+                (1/m)*(np.sin(m*theta_b[thi]) - np.sin(m*theta_a[thi]))
+                for m in range(1, z.n + 1) for thi in range(L)
+            ])
         I_sinm = np.array([
-            (1 / m) * (-np.cos(m * theta_b[thi]) + np.cos(m * theta_a[thi]))
-            for m in range(1, z.n + 1) for thi in range(L)
-        ])
+            (1/m)*(-np.cos(m*theta_b[thi]) + np.cos(m*theta_a[thi]))
+            for m in range(1, z.n + 1) for thi in range(L)])
         self.I_cosm = I_cosm
         self.I_sinm = I_sinm
 
         # K x nk, repeated entries for m < 0
         I_Rnmrho = np.array([
             z.I_Rnmrho(j, rho_b[rhi]) - z.I_Rnmrho(j, rho_a[rhi])
-            for j in range(z.nk) for rhi in range(K)
-        ])
+            for j in range(z.nk) for rhi in range(K)])
         self.I_Rnmrho = I_Rnmrho
 
-        A = np.zeros((K * L, z.nk), order='F', dtype=z.numpy_dtype)
+        A = np.zeros((K*L, z.nk), order='F', dtype=z.numpy_dtype)
         for k in range(z.nk):
             m = z.mtab[k]
-            offK = self.K * k
+            offK = self.K*k
             if m == 0:
-                av = np.zeros((K * L, ), order='F', dtype=z.numpy_dtype)
+                av = np.zeros((K*L,), order='F', dtype=z.numpy_dtype)
                 for j in range(K):
-                    tmp1 = L * j
+                    tmp1 = L*j
                     tmp2 = offK + j
                     for i in range(L):
-                        av[tmp1 + i] = (2.0 / L) * I_Rnmrho[tmp2]
+                        av[tmp1 + i] = (2.0/L)*I_Rnmrho[tmp2]
             else:
-                av = np.zeros((K * L, ), order='F', dtype=z.numpy_dtype)
+                av = np.zeros((K*L,), order='F', dtype=z.numpy_dtype)
                 if type(z) is RZern:
                     if m > 0:
                         I_cs = I_cosm
-                        offL = L * (m - 1)
+                        offL = L*(m - 1)
                     else:
                         I_cs = I_sinm
-                        offL = L * (-m - 1)
+                        offL = L*(-m - 1)
                     for j in range(K):
-                        tmp1 = L * j
+                        tmp1 = L*j
                         tmp2 = offK + j
                         for i in range(L):
-                            av[tmp1 + i] = ((1.0 / np.pi) * I_Rnmrho[tmp2] *
-                                            I_cs[offL + i])
+                            av[tmp1 + i] = (
+                                (1.0/np.pi)*I_Rnmrho[tmp2]*I_cs[offL + i]
+                            )
                 elif type(z) is CZern:
                     offL = 0
                     sgn = 0.0
                     if m > 0:
-                        offL = L * (m - 1)
+                        offL = L*(m - 1)
                         sgn = -1.0
                     else:
-                        offL = L * (-m - 1)
+                        offL = L*(-m - 1)
                         sgn = 1.0
                     for j in range(K):
-                        tmp1 = L * j
+                        tmp1 = L*j
                         tmp2 = offK + j
                         for i in range(L):
-                            av[tmp1 + i] = ((1.0 / np.pi) * I_Rnmrho[tmp2] *
-                                            (I_cosm[offL + i] +
-                                             1j * sgn * I_sinm[offL + i]))
-            A[:, k] = self.z.coefnorm[k] * av
+                            av[tmp1 + i] = (
+                                (1.0/np.pi)*I_Rnmrho[tmp2]*(
+                                    I_cosm[offL + i] +
+                                    1j*sgn*I_sinm[offL + i]
+                                )
+                            )
+            A[:, k] = self.z.coefnorm[k]*av
         self.A = A.T
 
     def fit_ak(self, k, Phi):
@@ -878,56 +985,62 @@ class FitZern:
 
         """
         m = self.z.mtab[k]
-        offK = self.K * k
+        offK = self.K*k
         offL = 0
         if type(self.z) is RZern:
             ak = tmp1 = tmp2 = 0.0
         else:
-            ak = 0.0 + 1j * 0.0
+            ak = 0.0 + 1j*0.0
             tmp1 = tmp2 = 0.0
         I_cs = None
         if m == 0:
             for j in range(self.K):
-                tmp1 = self.L * j
+                tmp1 = self.L*j
                 tmp2 = offK + j
                 for i in range(self.L):
-                    ak += Phi[tmp1 + i] * self.I_Rnmrho[tmp2]
-            ak *= (2.0 / self.L)
+                    ak += Phi[tmp1 + i]*self.I_Rnmrho[tmp2]
+            ak *= (2.0/self.L)
         else:
             if type(self.z) is RZern:
                 if m > 0:
                     I_cs = self.I_cosm
-                    offL = self.L * (m - 1)
+                    offL = self.L*(m - 1)
                 else:
                     I_cs = self.I_sinm
-                    offL = self.L * (-m - 1)
+                    offL = self.L*(-m - 1)
                 for j in range(self.K):
-                    tmp1 = self.L * j
+                    tmp1 = self.L*j
                     tmp2 = offK + j
                     # FIXME maybe implement kron(B', A)*vec(X)
                     for i in range(self.L):
-                        ak += ((1.0 / np.pi) * Phi[tmp1 + i] *
-                               self.I_Rnmrho[tmp2] * I_cs[offL + i])
+                        ak += (
+                            (1.0/np.pi)*Phi[tmp1 + i] *
+                            self.I_Rnmrho[tmp2] *
+                            I_cs[offL + i]
+                        )
             elif type(self.z) is CZern:
                 offL = 0
                 sgn = 0.0
                 if m > 0:
-                    offL = self.L * (m - 1)
+                    offL = self.L*(m - 1)
                     sgn = -1.0
                 else:
-                    offL = self.L * (-m - 1)
+                    offL = self.L*(-m - 1)
                     sgn = 1.0
                 for j in range(self.K):
-                    tmp1 = self.L * j
+                    tmp1 = self.L*j
                     tmp2 = offK + j
                     for i in range(self.L):
-                        ak += ((1.0 / np.pi) * Phi[tmp1 + i] *
-                               self.I_Rnmrho[tmp2] *
-                               (self.I_cosm[offL + i] +
-                                1j * sgn * self.I_sinm[offL + i]))
+                        ak += (
+                            (1.0/np.pi)*Phi[tmp1 + i] *
+                            self.I_Rnmrho[tmp2] * (
+                                self.I_cosm[offL + i] +
+                                1j*sgn*self.I_sinm[offL + i]
+                            )
+                        )
             else:
                 raise NotImplementedError()
-        return self.z.coefnorm[k] * ak
+        return self.z.coefnorm[k]*ak
 
     def _fit_slow(self, Phi):
         r"""Compute all the inner products. `Phi` is a phase grid in polar
@@ -943,7 +1056,7 @@ class FitZern:
         `a`: list of Zernike coefficients
 
         """
-        assert (len(Phi) == self.K * self.L)
+        assert(len(Phi) == self.K*self.L)
 
         a = list()
         for k in range(self.z.nk):
@@ -987,14 +1100,12 @@ class FitZern:
             np.linalg.norm(c_true - c_hat)/np.linalg.norm(c_true)
 
         """
-        assert (Phi.size == self.K * self.L and Phi.size == Phi.shape[0])
+        assert(Phi.size == self.K*self.L and Phi.size == Phi.shape[0])
         return np.dot(self.A, Phi)
 
-    def save(self,
-             filename,
-             prepend=None,
-             params=HDF5_options,
-             libver='latest'):
+    def save(
+            self, filename, prepend=None,
+            params=HDF5_options, libver='latest'):
         """Save object into an HDF5 file."""
         f = h5py.File(filename, 'w', libver=libver)
         self.save_h5py(f, prepend=prepend, params=params)
@@ -1021,9 +1132,9 @@ class FitZern:
         params['data'] = self.I_Rnmrho
         f.create_dataset(prefix + 'I_Rnmrho', **params)
 
-        f.create_dataset(prefix + 'K', data=np.array([self.K], dtype=int))
+        f.create_dataset(prefix + 'K', data=np.array([self.K], dtype=np.int))
 
-        f.create_dataset(prefix + 'L', data=np.array([self.L], dtype=int))
+        f.create_dataset(prefix + 'L', data=np.array([self.L], dtype=np.int))
 
         params['data'] = self.rho_a
         f.create_dataset(prefix + 'rho_a', **params)

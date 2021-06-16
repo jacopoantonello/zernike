@@ -99,6 +99,27 @@ print(R)
 np.linalg.norm(c_true - c_hat)/np.linalg.norm(c_true)
 ```
 
+```python
+import numpy as np
+from zernike import RZern
+
+cart = RZern(6)
+L, K = 200, 250
+ddx = np.linspace(-1.0, 1.0, K)
+ddy = np.linspace(-1.0, 1.0, L)
+xv, yv = np.meshgrid(ddx, ddy)
+cart.make_cart_grid(xv, yv)
+
+c0 = np.random.normal(size=cart.nk)
+Phi = cart.eval_grid(c0, matrix=True)
+c1 = cart.fit_cart_grid(Phi)[0]
+
+# where k1, k2 are the principal curvatures
+k1, k2 = cart.eval_curvature_grid(c1, matrix=True)
+
+```
+
+
 ## Installation from the GitHub repository
 
 - You should first install the following requirements:
