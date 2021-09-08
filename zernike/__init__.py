@@ -1,23 +1,22 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
+# Copyright 2021 Jacopo Antonello
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 """Complex- and real-valued Zernike polynomials.
 
 """
-
-# This file is part of zernike.
-#
-# zernike is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# zernike is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with zernike.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import division, print_function  # Python 2
 
@@ -34,9 +33,9 @@ from numpy.linalg import lstsq, matrix_rank, norm
 
 from zernike import version
 
-__author__ = 'J Antonello'
-__copyright__ = 'Copyright 2016-2021, J. Antonello'
-__license__ = 'GPLv3+'
+__author__ = 'Jacopo Antonello'
+__copyright__ = 'Copyright 2021 Jacopo Antonello'
+__license__ = 'Apache 2.0'
 __email__ = 'jacopo@antonello.org'
 __status__ = 'Production'
 __version__ = version.__version__

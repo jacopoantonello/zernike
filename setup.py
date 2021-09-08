@@ -62,13 +62,11 @@ setup(
     url='https://github.com/jacopoantonello/zernike',
     author='Jacopo Antonello',
     author_email='jacopo@antonello.org',
-    license='GPLv3+',
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
         'Topic :: Scientific/Engineering :: Physics',
-        ('License :: OSI Approved :: GNU General Public License v3 ' +
-         'or later (GPLv3+)'),
+        'License :: OSI Approved :: Apache Software License',
         'Programming Language :: Python :: 3',
     ],
     setup_requires=['numpy', 'h5py'],
