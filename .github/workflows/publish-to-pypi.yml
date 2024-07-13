@@ -1,20 +1,14 @@
-name: Publish packages to PyPI
-
-on:
-  push:
-    branches:
-      - master
-
 jobs:
-  publish:
-    name: Package and upload to PyPI
+  build:
+    name: Build distribution 📦
     runs-on: ubuntu-latest
+
     steps:
     - uses: actions/checkout@v4
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
-        python-version: '3.x'
+        python-version: "3.x"
     - name: Install pypa/build
       run: >-
         python3 -m
@@ -30,14 +24,14 @@ jobs:
         path: dist/
   publish-to-pypi:
     name: >-
-      Publish Python distribution to PyPI
+      Publish Python 🐍 distribution 📦 to PyPI
     if: startsWith(github.ref, 'refs/tags/')  # only publish to PyPI on tag pushes
     needs:
     - build
     runs-on: ubuntu-latest
     environment:
       name: pypi
-      url: https://pypi.org/p/zernike
+      url: https://pypi.org/p/zernike  # Replace <package-name> with your PyPI project name
     permissions:
       id-token: write  # IMPORTANT: mandatory for trusted publishing
     steps:
@@ -46,5 +40,5 @@ jobs:
       with:
         name: python-package-distributions
         path: dist/
-    - name: Publish distribution to PyPI
+    - name: Publish distribution 📦 to PyPI
       uses: pypa/gh-action-pypi-publish@release/v1
