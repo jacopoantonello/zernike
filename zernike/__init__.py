@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# Copyright 2021 Jacopo Antonello
+# Copyright 2024 Jacopo Antonello
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -40,18 +40,12 @@ __email__ = 'jacopo@antonello.org'
 __status__ = 'Production'
 __version__ = version.__version__
 __date__ = version.__date__
-__commit__ = version.__commit__
-__doc__ = """
+__doc__ = f"""
 Python code for Zernike polynomials.
 
-date:    {}
-version: {}
-commit:  {}
-""".format(
-    __date__,
-    __version__,
-    __commit__,
-)
+date:    {__date__}
+version: {__version__}
+"""
 __docformat__ = 'restructuredtext'
 
 HDF5_options = {
