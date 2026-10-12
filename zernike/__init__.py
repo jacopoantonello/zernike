@@ -27,7 +27,6 @@ except ImportError:  # Probably Python 2
     ABC = ABCMeta('ABC', (object, ), {'__slots__': ()})
 from math import factorial
 
-import h5py
 import numpy as np
 from numpy.linalg import lstsq, matrix_rank, norm
 
@@ -476,12 +475,17 @@ class Zern(ABC):
              params=HDF5_options,
              libver='latest'):
         """Save object into an HDF5 file."""
-        f = h5py.File(filename, 'w', libver=libver)
-        self.save_h5py(f, prepend=prepend, params=params)
-        f.close()
+        try:
+            import h5py
+        except ModuleNotFoundError:
+            raise ModuleNotFoundError("h5py is required for saving Zern instances to hdf5") from None
+
+        with h5py.File(filename, 'w', libver=libver) as f:
+            self.save_h5py(f, prepend=prepend, params=params)
 
     def save_h5py(self, f, prepend=None, params=HDF5_options):
         """Dump object contents into an opened HDF5 file object."""
+        import h5py
         prefix = self.__class__.__name__ + '/'
 
         if prepend is not None:
@@ -594,9 +598,13 @@ class Zern(ABC):
     @classmethod
     def load(cls, filename, prepend=None):
         """Load object from an HDF5 file."""
-        f = h5py.File(filename, 'r')
-        z = cls.load_h5py(f, prepend=prepend)
-        f.close()
+        try:
+            import h5py
+        except ModuleNotFoundError:
+            raise ModuleNotFoundError("h5py is required for loading Zern instances from hdf5") from None
+
+        with h5py.File(filename, 'r') as f:
+            z = cls.load_h5py(f, prepend=prepend)
 
         return z
 
@@ -989,9 +997,13 @@ class FitZern:
              params=HDF5_options,
              libver='latest'):
         """Save object into an HDF5 file."""
-        f = h5py.File(filename, 'w', libver=libver)
-        self.save_h5py(f, prepend=prepend, params=params)
-        f.close()
+        try:
+            import h5py
+        except ModuleNotFoundError:
+            raise ModuleNotFoundError("h5py is required for saving FitZern instances to hdf5") from None
+
+        with h5py.File(filename, 'w', libver=libver) as f:
+            self.save_h5py(f, prepend=prepend, params=params)
 
     def save_h5py(self, f, prepend=None, params=HDF5_options):
         """Dump object contents into an opened HDF5 file object."""
@@ -1039,9 +1051,13 @@ class FitZern:
     @classmethod
     def load(cls, filename, prepend=None):
         """Load object from an HDF5 file."""
-        f = h5py.File(filename, 'r')
-        z = cls.load_h5py(f, prepend=prepend)
-        f.close()
+        try:
+            import h5py
+        except ModuleNotFoundError:
+            raise ModuleNotFoundError("h5py is required for loading FitZern instances from hdf5") from None
+
+        with h5py.File(filename, 'r') as f:
+            z = cls.load_h5py(f, prepend=prepend)
 
         return z
 

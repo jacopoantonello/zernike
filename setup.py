@@ -37,8 +37,8 @@ setup(
         'License :: OSI Approved :: Apache Software License',
         'Programming Language :: Python :: 3',
     ],
-    install_requires=['numpy', 'h5py'],
-    extras_require={'plotting': ['matplotlib']},
+    install_requires=['numpy'],
+    extras_require={'plotting': ['matplotlib'], 'io': ['h5py']},
     packages=find_packages(exclude=['tests*', 'examples*']),
     python_requires='>=2.7',
 )

@@ -16,6 +16,13 @@ You can install `zernike` using `pip`
 pip install --user zernike
 ```
 
+To install `zernike` with the optional dependencies for plotting and/or saving
+data in hdf5 files, pass the `plotting` and/or `io` extras:
+
+```bash
+pip install --user "zernike[io,plotting]"
+```
+
 ## Example: plot the Zernike pyramid
 
 ```python
